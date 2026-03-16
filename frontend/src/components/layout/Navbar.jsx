@@ -6,7 +6,7 @@ function Navbar() {
   const location = useLocation();
 
   const user = {
-    name: 'Internal User',
+    name: 'Terrasn User',
     email: 'internal@company.com'
   };
 
@@ -23,7 +23,7 @@ function Navbar() {
               <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-slate-200 animate-pulse" />
             </div>
             <span className="text-xl font-bold text-blue-600">
-              APIFlow Internal
+              Terrasun APIFlow Internal
             </span>
           </Link>
 
