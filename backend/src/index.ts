@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -55,7 +55,7 @@ app.use('/api/export', exportRoutes);
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Error handling
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     console.error('Error:', err);
     res.status(err.status || 500).json({
         error: err.message || 'Internal Server Error',

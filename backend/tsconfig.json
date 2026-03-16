@@ -7,14 +7,28 @@
         ],
         "outDir": "./dist",
         "rootDir": "./src",
-        "strict": true,
+        "strict": false,
+        "noImplicitAny": false,
+        "strictNullChecks": false,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
         "resolveJsonModule": true,
         "declaration": true,
         "declarationMap": true,
-        "sourceMap": true
+        "sourceMap": true,
+        "types": [
+            "node",
+            "express",
+            "js-yaml",
+            "jsonwebtoken",
+            "uuid",
+            "pg",
+            "cors",
+            "morgan",
+            "bcryptjs"
+        ]
     },
     "include": [
         "src/**/*"
