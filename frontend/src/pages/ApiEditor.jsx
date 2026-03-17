@@ -180,6 +180,9 @@ export default function ApiEditor({ endpointId, projectId }) {
     const generateAiMock = async (type) => {
         setIsGenerating(true);
         try {
+            // Use relative URL for production or dev
+            const apiUrl = "/api/ai/generate-mock";
+            
             // Get names from existing params if any to help AI
             const fieldNames = [
                 ...(currentEndpoint.query_params || []).map(p => p.name),
@@ -187,7 +190,7 @@ export default function ApiEditor({ endpointId, projectId }) {
                 ...(currentEndpoint.headers || []).map(h => h.name)
             ].filter(Boolean).join(", ");
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4001/api'}/ai/generate-mock`, {
+            const res = await fetch(apiUrl, {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
@@ -203,7 +206,13 @@ export default function ApiEditor({ endpointId, projectId }) {
                     requestBody: type === "response" ? currentEndpoint.request_body : null
                 })
             });
+
             const data = await res.json();
+            
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to generate AI mock");
+            }
+
             if (data.mock) {
                 if (type === "request") {
                     updateField("request_body", data.mock);
@@ -212,8 +221,8 @@ export default function ApiEditor({ endpointId, projectId }) {
                 }
             }
         } catch (e) {
-            console.error("AI Generation failed", e);
-            alert("Failed to generate mock data. Check your AI configuration.");
+            console.error("AI Generation failed:", e);
+            alert(`AI GENERATION ERROR: ${e.message}`);
         } finally {
             setIsGenerating(false);
         }
