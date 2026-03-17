@@ -20,6 +20,7 @@ import searchRoutes from './routes/search';
 import mockRoutes from './routes/mock';
 import versionRoutes from './routes/versions';
 import exportRoutes from './routes/export';
+import aiRoutes from './routes/ai';
 
 const app = express();
 const httpServer = createServer(app);
@@ -50,6 +51,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/mock', mockRoutes);
 app.use('/api/versions', versionRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../public')));

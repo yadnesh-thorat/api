@@ -176,4 +176,18 @@ router.get('/:id/tree', authenticate, async (req: AuthRequest, res) => {
     }
 });
 
+// Get project schemas
+router.get('/:id/schemas', authenticate, async (req: AuthRequest, res) => {
+    try {
+        const result = await query(
+            'SELECT * FROM schemas WHERE project_id = $1 ORDER BY name',
+            [req.params.id]
+        );
+        res.json(result.rows);
+    } catch (error: any) {
+        console.error('Get schemas error:', error);
+        res.status(500).json({ error: 'Failed to get schemas' });
+    }
+});
+
 export default router;
