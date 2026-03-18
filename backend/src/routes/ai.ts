@@ -61,7 +61,7 @@ router.post('/generate-mock', authenticate, async (req: AuthRequest, res: Respon
     const prompt = `Generate a realistic ${contentType} ${type} sample for an API endpoint.
 Endpoint: ${method} ${path}
 Summary: ${summary}
-${description ? `Description: ${description}` : ''}
+${description ? `Context/Description: ${description}` : ''}
 Relevant Fields: ${fieldNames}
 
 ${schemaContext ? `FOLLOW THIS STRUCTURE/SCHEMA EXACTLY BUT POPULATE WITH REALISTIC DATA:
@@ -69,10 +69,11 @@ ${JSON.stringify(schemaContext, null, 2)}` : ''}
 
 Requirements:
 1. Return ONLY the completed ${contentType} data.
-2. No explanation, no markdown code blocks (no \`\`\`).
-3. If a structure was provided above, you MUST return data that fits that exact schema.
-4. Use realistic, non-placeholder values (avoid "string", "number", etc.).
-5. If it is a response, make it look like a standard successful API response.`;
+2. If the Context contains a list of column names, ensure EVERY column is included in the output.
+3. If the Summary implies a list (e.g. "List", "Get all"), return an ARRAY of objects.
+4. No explanation, no markdown code blocks (no \`\`\`).
+5. Use realistic, high-quality data (avoid generic "string1", "123").
+6. If it's a response, make it look like a professional production API response.`;
 
     let resultText = '';
     let success = false;
