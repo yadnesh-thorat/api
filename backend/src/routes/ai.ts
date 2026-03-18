@@ -47,7 +47,7 @@ async function generateWithGroq(apiKey: string, prompt: string) {
 }
 
 router.post('/generate-mock', authenticate, async (req: AuthRequest, res: Response) => {
-    const { type, method, path, summary, fieldNames, requestBody, contentType = 'application/json' } = req.body;
+    const { type, method, path, summary, description, fieldNames, requestBody, contentType = 'application/json' } = req.body;
 
     const geminiKey = process.env.GEMINI_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
@@ -61,6 +61,7 @@ router.post('/generate-mock', authenticate, async (req: AuthRequest, res: Respon
     const prompt = `Generate a realistic ${contentType} ${type} sample for an API endpoint.
 Endpoint: ${method} ${path}
 Summary: ${summary}
+${description ? `Description: ${description}` : ''}
 Relevant Fields: ${fieldNames}
 ${requestBody ? `Based on Request Body: ${JSON.stringify(requestBody)}` : ''}
 

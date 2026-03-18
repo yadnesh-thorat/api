@@ -191,6 +191,7 @@ export default function ApiEditor({ endpointId, projectId }) {
         method: currentEndpoint.method,
         path: currentEndpoint.path,
         summary: currentEndpoint.summary,
+        description: currentEndpoint.description,
         fieldNames,
         contentType: currentEndpoint.headers?.find(h => h.name?.toLowerCase() === 'content-type')?.value || "application/json",
         requestBody: type === "response" ? currentEndpoint.request_body : null

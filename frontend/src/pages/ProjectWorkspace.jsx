@@ -152,7 +152,7 @@ export default function ProjectWorkspace() {
     }
     setIsGenerating(true);
     try {
-      const prompt = newEndpoint.summary || newEndpoint.path;
+      const prompt = `System Prompt: Summary: ${newEndpoint.summary || "Unnamed"}, Path: ${newEndpoint.path || "Unknown"}, Context: ${newEndpoint.description || "No description provided"}`;
       const res = await aiApi.generateEndpoint({ prompt });
       const data = res.data;
       
