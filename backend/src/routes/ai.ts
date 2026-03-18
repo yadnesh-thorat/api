@@ -79,13 +79,14 @@ ${JSON.stringify(schemaContext, null, 2)}` : ''}
 
 Requirements:
 1. Return ONLY the completed ${contentType} data.
-2. If the Context contains a list of column names, ensure EVERY column is included in the output.
-3. If the Summary implies a list (e.g. "List", "Get all"), return an ARRAY of objects.
-4. No explanation, no markdown code blocks (no \`\`\`).
-5. Use realistic, high-quality data (avoid generic "string1", "123").
-6. If a structure was provided above, you MUST return data that fits that exact schema.
-7. If provided, use the PROJECT DATABASE SCHEMA to generate sample data that matches real table structures.
-8. If it's a response, make it look like a professional production API response.`;
+2. If the Context/Description specifies a subset of fields (e.g. 'limit to...', 'only include...'), you MUST respect that and ignore other columns in the schema.
+3. If the Context contains a list of column names, ensure EVERY requested column is included in the output.
+4. If the Summary implies a list (e.g. "List", "Get all"), return an ARRAY of objects.
+5. No explanation, no markdown code blocks (no \`\`\`).
+6. Use realistic, high-quality data (avoid generic "string1", "123").
+7. If a structure/schema was provided above (schemaContext), you MUST return data that fits that exact schema.
+8. If provided, use the PROJECT DATABASE SCHEMA as reference for table/field names, but prioritize instructions in the Context/Description.
+9. If it's a response, make it look like a professional production API response.`;
 
     let resultText = '';
     let success = false;
@@ -177,10 +178,11 @@ JSON Structure:
     "auth_type": "None|Bearer|API Key|Basic"
 }
 
-${dbSchema ? `PROJECT DATABASE SCHEMA (USE THIS TO MATCH REQUEST/RESPONSE STRUCTURE):
+${dbSchema ? `PROJECT DATABASE SCHEMA (REFERENCE ONLY - use as table/field context):
 ${dbSchema}` : ''}
 
-User's Request: ${userPrompt}`;
+User's Request: ${userPrompt}
+IMPORTANT: If the user provides specific field details or requirements in their request or description, prioritise those over the global project database schema.`;
 
     let resultText = '';
     let success = false;
