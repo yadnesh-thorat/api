@@ -1127,6 +1127,110 @@ export default function ProjectWorkspace() {
           </div>
         )}
       </main>
+      {showSchemaModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-6 animate-fadeIn">
+          <div className="bg-white w-full max-w-4xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                  <Database className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Project Database Schema</h3>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Provide SQL or JSON schema to guide the AI</p>
+                </div>
+              </div>
+              <button onClick={() => setShowSchemaModal(false)} className="p-3 rounded-full hover:bg-slate-50 text-slate-400 transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <div className="p-8 pb-4">
+                <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex gap-4 items-start mb-6">
+                    <Zap className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                    <p className="text-xs text-blue-800 leading-relaxed font-medium">
+                        Uploading your database schema helps the AI understand your data structure. You can **paste** your SQL/JSON below or **upload** a file.
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <input 
+                        type="file" 
+                        id="schema-upload" 
+                        className="hidden" 
+                        accept=".sql,.json,.txt"
+                        onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                                setDbSchema(event.target.result);
+                                e.target.value = null;
+                            };
+                            reader.readAsText(file);
+                        }}
+                    />
+                    <label 
+                        htmlFor="schema-upload"
+                        className="px-6 h-10 rounded-xl bg-white border border-slate-200 text-[10px] font-black text-slate-600 hover:bg-slate-50 transition-all cursor-pointer flex items-center gap-2 uppercase tracking-widest shadow-sm"
+                    >
+                        <Download className="w-3.5 h-3.5" /> Upload Schema File
+                    </label>
+                    <span className="text-[10px] font-bold text-slate-400 tracking-tight">Accepts .sql, .json, .txt</span>
+                </div>
+              </div>
+              
+              <div className="flex-1 px-8 pb-8">
+                <div className="h-full rounded-[32px] overflow-hidden border border-slate-200 bg-[#1e1e1e] shadow-2xl">
+                    <div className="bg-[#2d2d2d] px-6 py-2 border-b border-[#333] flex items-center justify-between">
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">SQL / Schema Editor</span>
+                    </div>
+                    <Editor
+                      height="100%"
+                      language="sql"
+                      theme="vs-dark"
+                      value={dbSchema}
+                      onChange={(val) => setDbSchema(val || "")}
+                      options={{
+                        minimap: { enabled: false },
+                        fontSize: 14,
+                        padding: { top: 20 },
+                      }}
+                    />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+              <button 
+                onClick={() => setShowSchemaModal(false)}
+                className="px-8 h-12 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-white transition-all"
+              >
+                Close
+              </button>
+              <button 
+                disabled={isSavingSchema}
+                onClick={async () => {
+                   setIsSavingSchema(true);
+                   try {
+                     await projectsApi.uploadSchema(projectId, dbSchema);
+                     alert("Schema saved successfully! AI will now use this context.");
+                     refetchProject();
+                   } catch (e) {
+                     alert("Failed to save schema: " + e.message);
+                   } finally {
+                     setIsSavingSchema(false);
+                   }
+                }}
+                className="px-10 h-12 rounded-xl bg-slate-900 text-white text-xs font-black shadow-2xl shadow-slate-300 hover:bg-black transition-all disabled:opacity-50 flex items-center gap-2 uppercase tracking-widest"
+              >
+                {isSavingSchema ? "Saving..." : "Save Schema"}
+                {!isSavingSchema && <Check className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
