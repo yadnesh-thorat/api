@@ -96,7 +96,8 @@ Requirements:
 7. If a structure/schema was provided above (schemaContext), you MUST return data that fits that exact schema.
 8. If provided, use the PROJECT DATABASE SCHEMA as reference for table/field names, but prioritize instructions in the Context/Description.
 9. If it's a response, make it look like a professional production API response.
-10. Each item in an array MUST have unique, varied, and diverse data - never repeat similar patterns.`;
+10. Each item in an array MUST have unique, varied, and diverse data - never repeat similar patterns.
+11. ANALYZE the Summary and Description to identify the specific category, brand, or niche (e.g., "Luxury Watches", "Outdoor Gear", "SaaS Users"). Generate data that belongs to that specific category, not generic products.`;
 
     let resultText = '';
     let success = false;
