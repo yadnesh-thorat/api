@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
+import { query } from '../config/database';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -47,7 +48,13 @@ async function generateWithGroq(apiKey: string, prompt: string) {
 }
 
 router.post('/generate-mock', authenticate, async (req: AuthRequest, res: Response) => {
-    const { type, method, path, summary, description, fieldNames, schemaContext, contentType = 'application/json' } = req.body;
+    const { type, method, path, summary, description, fieldNames, schemaContext, projectId, contentType = 'application/json' } = req.body;
+
+    let dbSchema = null;
+    if (projectId) {
+        const projResult = await query('SELECT db_schema FROM projects WHERE id = $1', [projectId]);
+        dbSchema = projResult.rows[0]?.db_schema;
+    }
 
     const geminiKey = process.env.GEMINI_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
@@ -64,6 +71,9 @@ Summary: ${summary}
 ${description ? `Context/Description: ${description}` : ''}
 Relevant Fields: ${fieldNames}
 
+${dbSchema ? `PROJECT DATABASE SCHEMA (USE AS DATA CONTEXT):
+${dbSchema}` : ''}
+
 ${schemaContext ? `FOLLOW THIS STRUCTURE/SCHEMA EXACTLY BUT POPULATE WITH REALISTIC DATA:
 ${JSON.stringify(schemaContext, null, 2)}` : ''}
 
@@ -73,7 +83,9 @@ Requirements:
 3. If the Summary implies a list (e.g. "List", "Get all"), return an ARRAY of objects.
 4. No explanation, no markdown code blocks (no \`\`\`).
 5. Use realistic, high-quality data (avoid generic "string1", "123").
-6. If it's a response, make it look like a professional production API response.`;
+6. If a structure was provided above, you MUST return data that fits that exact schema.
+7. If provided, use the PROJECT DATABASE SCHEMA to generate sample data that matches real table structures.
+8. If it's a response, make it look like a professional production API response.`;
 
     let resultText = '';
     let success = false;
@@ -132,7 +144,13 @@ Requirements:
 });
 
 router.post('/generate-endpoint', authenticate, async (req: AuthRequest, res: Response) => {
-    const { prompt: userPrompt } = req.body;
+    const { prompt: userPrompt, projectId } = req.body;
+
+    let dbSchema = null;
+    if (projectId) {
+        const projResult = await query('SELECT db_schema FROM projects WHERE id = $1', [projectId]);
+        dbSchema = projResult.rows[0]?.db_schema;
+    }
 
     const geminiKey = process.env.GEMINI_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
@@ -158,6 +176,9 @@ JSON Structure:
     "response_schema": { ...json schema mock... },
     "auth_type": "None|Bearer|API Key|Basic"
 }
+
+${dbSchema ? `PROJECT DATABASE SCHEMA (USE THIS TO MATCH REQUEST/RESPONSE STRUCTURE):
+${dbSchema}` : ''}
 
 User's Request: ${userPrompt}`;
 

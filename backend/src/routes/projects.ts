@@ -89,13 +89,14 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
 // Update project
 router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     try {
-        const { name, description, base_url, is_public } = req.body;
+        const { name, description, base_url, is_public, db_schema } = req.body;
 
         const result = await query(
             `UPDATE projects SET name = COALESCE($1, name), description = COALESCE($2, description),
-       base_url = COALESCE($3, base_url), is_public = COALESCE($4, is_public)
-       WHERE id = $5 RETURNING *`,
-            [name, description, base_url, is_public, req.params.id]
+       base_url = COALESCE($3, base_url), is_public = COALESCE($4, is_public),
+       db_schema = COALESCE($5, db_schema)
+       WHERE id = $6 RETURNING *`,
+            [name, description, base_url, is_public, db_schema, req.params.id]
         );
 
         if (result.rows.length === 0) {
@@ -106,6 +107,26 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     } catch (error: any) {
         console.error('Update project error:', error);
         res.status(500).json({ error: 'Failed to update project' });
+    }
+});
+
+// Upload Database Schema
+router.post('/:id/upload-schema', authenticate, async (req: AuthRequest, res) => {
+    try {
+        const { schema } = req.body;
+        if (!schema) return res.status(400).json({ error: 'Schema content is required' });
+
+        const result = await query(
+            'UPDATE projects SET db_schema = $1 WHERE id = $2 RETURNING id',
+            [schema, req.params.id]
+        );
+
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Project not found' });
+
+        res.json({ message: 'Database schema uploaded successfully' });
+    } catch (error: any) {
+        console.error('Upload schema error:', error);
+        res.status(500).json({ error: 'Failed to upload database schema' });
     }
 });
 

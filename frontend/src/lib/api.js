@@ -15,7 +15,8 @@ const projectsApi = {
   update: (id, data) => api.put(`/projects/${id}`, data),
   delete: (id) => api.delete(`/projects/${id}`),
   getTree: (id) => api.get(`/projects/${id}/tree`),
-  addMember: (id, email, role) => api.post(`/projects/${id}/members`, { email, role })
+  addMember: (id, email, role) => api.post(`/projects/${id}/members`, { email, role }),
+  uploadSchema: (id, schema) => api.post(`/projects/${id}/upload-schema`, { schema })
 };
 const apisApi = {
   list: (projectId) => api.get(`/apis/project/${projectId}`),

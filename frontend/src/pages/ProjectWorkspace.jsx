@@ -28,7 +28,9 @@ import {
   AlertCircle,
   CheckCircle2,
   Circle,
-  Info
+  Info,
+  Database, // Added Database icon
+  X // Added X icon
 } from "lucide-react";
 
 export default function ProjectWorkspace() {
@@ -59,6 +61,22 @@ export default function ProjectWorkspace() {
   const [sidebarSearch, setSidebarSearch] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showSchemaModal, setShowSchemaModal] = useState(false);
+  const [dbSchema, setDbSchema] = useState("");
+  const [isSavingSchema, setIsSavingSchema] = useState(false);
+
+  const { data: projectData, refetch: refetchProject } = useQuery({
+    queryKey: ["project", projectId],
+    queryFn: () => projectsApi.get(projectId),
+    enabled: !!projectId,
+    onSuccess: (data) => setDbSchema(data.db_schema || "")
+  });
+
+  useEffect(() => {
+    if (projectData) {
+        setDbSchema(projectData.db_schema || "");
+    }
+  }, [projectData]);
 
   const onboardingTips = [
     { id: 'path', label: 'Define endpoint route', status: !!newEndpoint.path },
@@ -153,7 +171,7 @@ export default function ProjectWorkspace() {
     setIsGenerating(true);
     try {
       const prompt = `System Prompt: Summary: ${newEndpoint.summary || "Unnamed"}, Path: ${newEndpoint.path || "Unknown"}, Context: ${newEndpoint.description || "No description provided"}`;
-      const res = await aiApi.generateEndpoint({ prompt });
+      const res = await aiApi.generateEndpoint({ prompt, projectId });
       const data = res.data;
       
       if (data.blueprint) {
@@ -415,9 +433,14 @@ export default function ProjectWorkspace() {
           )}
         </div>
 
-        {/* Workspace Footer Actions */}
-        <div className="p-4 border-t border-slate-200 flex gap-2">
-          <button className="flex-1 px-3 py-2 text-[10px] font-bold text-slate-500 hover:text-slate-800 flex items-center gap-2 justify-center transition-colors">
+        <div className="p-4 border-t border-slate-200 flex flex-col gap-2">
+          <button 
+            onClick={() => setShowSchemaModal(true)}
+            className="w-full px-3 py-2 text-[10px] font-black text-slate-500 hover:text-blue-600 flex items-center gap-2 justify-center transition-all bg-slate-50 border border-transparent hover:border-blue-100 hover:bg-blue-50/50 rounded-xl"
+          >
+            <Database className="w-3.5 h-3.5" /> DB Schema Manager
+          </button>
+          <button className="w-full px-3 py-2 text-[10px] font-bold text-slate-400 hover:text-slate-600 flex items-center gap-2 justify-center transition-colors">
             <Settings className="w-3.5 h-3.5" /> Project Config
           </button>
         </div>
