@@ -74,8 +74,9 @@ Relevant Fields: ${fieldNames}
 ${dbSchema ? `PROJECT DATABASE SCHEMA (USE AS DATA CONTEXT):
 ${dbSchema}` : ''}
 
-${schemaContext ? `FOLLOW THIS STRUCTURE/SCHEMA EXACTLY BUT POPULATE WITH REALISTIC DATA:
-${JSON.stringify(schemaContext, null, 2)}` : ''}
+${schemaContext ? `FOLLOW THIS STRUCTURE/SCHEMA TO POPULATE WITH REALISTIC MOCK DATA:
+${JSON.stringify(schemaContext, null, 2)}
+(Note: If the above is a JSON Schema with 'type', 'properties', etc., just generate the corresponding MOCK OBJECT/ARRAY, not the schema itself.)` : ''}
 
 Requirements:
 1. Return ONLY the completed ${contentType} data.
@@ -97,7 +98,8 @@ Requirements:
 8. If provided, use the PROJECT DATABASE SCHEMA as reference for table/field names, but prioritize instructions in the Context/Description.
 9. If it's a response, make it look like a professional production API response.
 10. Each item in an array MUST have unique, varied, and diverse data - never repeat similar patterns.
-11. ANALYZE the Summary and Description to identify the specific category, brand, or niche (e.g., "Luxury Watches", "Outdoor Gear", "SaaS Users"). Generate data that belongs to that specific category, not generic products.`;
+11. ANALYZE the Summary and Description to identify the specific category, brand, or niche (e.g., "Luxury Watches", "Outdoor Gear", "SaaS Users"). Generate data that belongs to that specific category, not generic products.
+12. IMPORTANT: If the provided structure is a JSON Schema (containing 'type', 'properties', 'items'), DO NOT return another schema. Return a **Mock JSON Data Object** that matches that schema structure and populate it with real values.`;
 
     let resultText = '';
     let success = false;
