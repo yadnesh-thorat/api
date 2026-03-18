@@ -194,7 +194,7 @@ export default function ApiEditor({ endpointId, projectId }) {
         description: currentEndpoint.description,
         fieldNames,
         contentType: currentEndpoint.headers?.find(h => h.name?.toLowerCase() === 'content-type')?.value || "application/json",
-        requestBody: type === "response" ? currentEndpoint.request_body : null
+        schemaContext: type === "request" ? currentEndpoint.request_body : currentEndpoint.response_schema
       });
 
       const data = res.data;

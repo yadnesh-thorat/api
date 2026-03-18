@@ -47,7 +47,7 @@ async function generateWithGroq(apiKey: string, prompt: string) {
 }
 
 router.post('/generate-mock', authenticate, async (req: AuthRequest, res: Response) => {
-    const { type, method, path, summary, description, fieldNames, requestBody, contentType = 'application/json' } = req.body;
+    const { type, method, path, summary, description, fieldNames, schemaContext, contentType = 'application/json' } = req.body;
 
     const geminiKey = process.env.GEMINI_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
@@ -63,13 +63,16 @@ Endpoint: ${method} ${path}
 Summary: ${summary}
 ${description ? `Description: ${description}` : ''}
 Relevant Fields: ${fieldNames}
-${requestBody ? `Based on Request Body: ${JSON.stringify(requestBody)}` : ''}
+
+${schemaContext ? `FOLLOW THIS STRUCTURE/SCHEMA EXACTLY BUT POPULATE WITH REALISTIC DATA:
+${JSON.stringify(schemaContext, null, 2)}` : ''}
 
 Requirements:
-1. Return ONLY the content in ${contentType} format.
-2. No explanation, no markdown formatting (no \`\`\`).
-3. Use realistic data.
-4. If it's a response schema, make it look like a standard successful API response.`;
+1. Return ONLY the completed ${contentType} data.
+2. No explanation, no markdown code blocks (no \`\`\`).
+3. If a structure was provided above, you MUST return data that fits that exact schema.
+4. Use realistic, non-placeholder values (avoid "string", "number", etc.).
+5. If it is a response, make it look like a standard successful API response.`;
 
     let resultText = '';
     let success = false;
