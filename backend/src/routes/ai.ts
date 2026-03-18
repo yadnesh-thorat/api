@@ -81,12 +81,22 @@ Requirements:
 1. Return ONLY the completed ${contentType} data.
 2. If the Context/Description specifies a subset of fields (e.g. 'limit to...', 'only include...'), you MUST respect that and ignore other columns in the schema.
 3. If the Context contains a list of column names, ensure EVERY requested column is included in the output.
-4. If the Summary implies a list (e.g. "List", "Get all"), return an ARRAY of objects.
+4. If the Summary implies a list (e.g. "List", "Get all"), return an ARRAY of 3-5 objects.
 5. No explanation, no markdown code blocks (no \`\`\`).
-6. Use realistic, high-quality data (avoid generic "string1", "123").
+6. CRITICAL - USE HYPER-REALISTIC DATA. Examples:
+   - Names: "Apple MacBook Pro 16-inch", "Nike Air Max 270", "Samsung Galaxy S24 Ultra" (NOT "Product 1", "Item A")
+   - Emails: "sarah.johnson@gmail.com", "dev.ops@techcorp.io" (NOT "user1@test.com")
+   - Prices: 1299.99, 89.50, 24999.00 (NOT 100, 200, 300)
+   - IDs: use UUIDs like "a1b2c3d4-e5f6-7890-abcd-ef1234567890" or realistic auto-increment integers
+   - Dates: "2025-03-15T10:30:00Z" (NOT "2024-01-01")
+   - URLs: "https://cdn.example.com/images/products/macbook-pro-16.jpg"
+   - Descriptions: Write 1-2 realistic sentences, not just "description here"
+   - Phone: "+1 (415) 555-0132" 
+   - Address: "742 Evergreen Terrace, Springfield, IL 62704"
 7. If a structure/schema was provided above (schemaContext), you MUST return data that fits that exact schema.
 8. If provided, use the PROJECT DATABASE SCHEMA as reference for table/field names, but prioritize instructions in the Context/Description.
-9. If it's a response, make it look like a professional production API response.`;
+9. If it's a response, make it look like a professional production API response.
+10. Each item in an array MUST have unique, varied, and diverse data - never repeat similar patterns.`;
 
     let resultText = '';
     let success = false;
