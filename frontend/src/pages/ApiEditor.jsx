@@ -19,7 +19,8 @@ import {
     Layers,
     ShieldCheck,
     AlertCircle,
-    Zap
+    Zap,
+    Info
 } from "lucide-react";
 
 export default function ApiEditor({ endpointId, projectId }) {
@@ -188,13 +189,13 @@ export default function ApiEditor({ endpointId, projectId }) {
 
       const res = await aiApi.generateMock({
         type,
-        method: currentEndpoint.method,
-        path: currentEndpoint.path,
-        summary: currentEndpoint.summary,
-        description: currentEndpoint.description,
+        method: editedEndpoint.method || currentEndpoint.method,
+        path: editedEndpoint.path || currentEndpoint.path,
+        summary: editedEndpoint.summary || currentEndpoint.summary,
+        description: editedEndpoint.description || currentEndpoint.description,
         fieldNames,
-        contentType: currentEndpoint.headers?.find(h => h.name?.toLowerCase() === 'content-type')?.value || "application/json",
-        schemaContext: type === "request" ? currentEndpoint.request_body : currentEndpoint.response_schema,
+        contentType: (editedEndpoint.headers || currentEndpoint.headers)?.find(h => h.name?.toLowerCase() === 'content-type')?.value || "application/json",
+        schemaContext: type === "request" ? (editedEndpoint.request_body || currentEndpoint.request_body) : (editedEndpoint.response_schema || currentEndpoint.response_schema),
         projectId
       });
 
@@ -932,6 +933,13 @@ function SchemaBox({ title, data, onEdit, onAiGenerate, isGenerating, schemas, o
                 <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${color === 'blue' ? 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'}`} />
                     <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">{title}</h4>
+                    <div className="relative group/tip">
+                        <Info className="w-3.5 h-3.5 text-slate-300 hover:text-blue-500 cursor-help transition-colors" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-56 p-4 bg-[#1e1e1e] border border-[#333] text-white text-[11px] rounded-2xl opacity-0 group-hover/tip:opacity-100 transition-all pointer-events-none shadow-2xl z-[100] scale-95 group-hover/tip:scale-100 origin-bottom">
+                            <p className="font-black mb-2 uppercase tracking-widest text-blue-400 border-b border-blue-500/20 pb-1">Filtering Tip</p>
+                            To generate only specific columns, mention them in the <strong>Endpoint Description</strong> (e.g., "Only include name and price").
+                        </div>
+                    </div>
                 </div>
                 
                 <div className="flex items-center gap-3">
