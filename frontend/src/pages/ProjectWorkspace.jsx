@@ -58,6 +58,7 @@ export default function ProjectWorkspace() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [sidebarSearch, setSidebarSearch] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const onboardingTips = [
     { id: 'path', label: 'Define endpoint route', status: !!newEndpoint.path },
@@ -143,6 +144,49 @@ export default function ProjectWorkspace() {
       alert("Failed to delete endpoint: " + (err.response?.data?.error || err.message));
     }
   });
+
+  const generateEndpointWithAi = async () => {
+    if (!newEndpoint.summary && !newEndpoint.path) {
+      alert("Please provide at least a summary or path for the AI to work with.");
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const prompt = newEndpoint.summary || newEndpoint.path;
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4001/api'}/ai/generate-endpoint`, {
+        method: "POST",
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "AI failed to generate endpoint blueprint");
+      
+      if (data.blueprint) {
+        setNewEndpoint({
+          ...newEndpoint,
+          path: data.blueprint.path || newEndpoint.path,
+          method: data.blueprint.method || newEndpoint.method,
+          summary: data.blueprint.summary || newEndpoint.summary,
+          description: data.blueprint.description || newEndpoint.description,
+          headers: data.blueprint.headers || newEndpoint.headers,
+          query_params: data.blueprint.query_params || newEndpoint.query_params,
+          path_params: data.blueprint.path_params || newEndpoint.path_params,
+          request_body: data.blueprint.request_body || newEndpoint.request_body,
+          response_schema: data.blueprint.response_schema || newEndpoint.response_schema,
+          auth_type: data.blueprint.auth_type || newEndpoint.auth_type,
+          status_codes: data.blueprint.status_codes || newEndpoint.status_codes
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      alert(e.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const toggleApi = (id) => {
     const next = new Set(expandedApis);
@@ -494,6 +538,14 @@ export default function ProjectWorkspace() {
                   Discard
                 </button>
                 <button
+                  onClick={generateEndpointWithAi}
+                  disabled={isGenerating}
+                  className="px-6 h-12 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 text-xs font-black shadow-lg shadow-indigo-100/50 hover:bg-indigo-100 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Zap className={`w-4 h-4 ${isGenerating ? 'animate-pulse' : ''}`} />
+                  {isGenerating ? "AI Thinking..." : "AI Generate"}
+                </button>
+                <button
                   onClick={() => { if (newEndpoint.path) createEndpointMutation.mutate({ apiId: showNewEndpoint, data: newEndpoint }); }}
                   className="px-10 h-12 rounded-xl bg-slate-900 text-white text-xs font-black shadow-2xl shadow-slate-300 hover:bg-black transition-all active:scale-95 uppercase tracking-widest flex items-center gap-2"
                 >
@@ -774,26 +826,49 @@ export default function ProjectWorkspace() {
                             <div className="divide-y divide-slate-100">
                               {newEndpoint.headers.map((h, i) => (
                                 <div key={i} className="p-4 flex gap-3 items-center">
-                                  <input
-                                    placeholder="Header-Name"
-                                    className="flex-1 bg-slate-50 border-none rounded-xl px-4 h-10 text-xs font-mono font-bold"
-                                    value={h.name}
-                                    onChange={e => {
-                                      const next = [...newEndpoint.headers];
-                                      next[i] = { ...h, name: e.target.value };
-                                      setNewEndpoint({ ...newEndpoint, headers: next });
-                                    }}
-                                  />
-                                  <input
-                                    placeholder="Example Value"
-                                    className="flex-1 bg-slate-50 border-none rounded-xl px-4 h-10 text-xs"
-                                    value={h.value}
-                                    onChange={e => {
-                                      const next = [...newEndpoint.headers];
-                                      next[i] = { ...h, value: e.target.value };
-                                      setNewEndpoint({ ...newEndpoint, headers: next });
-                                    }}
-                                  />
+                                  <div className="flex-1 relative">
+                                    <input
+                                      placeholder="Header-Name"
+                                      list="common-headers-create"
+                                      className="w-full bg-slate-50 border-none rounded-xl px-4 h-10 text-xs font-mono font-bold"
+                                      value={h.name}
+                                      onChange={e => {
+                                        const next = [...newEndpoint.headers];
+                                        next[i] = { ...h, name: e.target.value };
+                                        setNewEndpoint({ ...newEndpoint, headers: next });
+                                      }}
+                                    />
+                                    <datalist id="common-headers-create">
+                                        <option value="Accept" />
+                                        <option value="Authorization" />
+                                        <option value="Content-Type" />
+                                        <option value="Cache-Control" />
+                                        <option value="User-Agent" />
+                                        <option value="X-API-Key" />
+                                    </datalist>
+                                  </div>
+                                  <div className="flex-1 relative">
+                                    <input
+                                      placeholder="Example Value"
+                                      list={h.name?.toLowerCase() === 'content-type' ? "common-content-types-create" : undefined}
+                                      className="w-full bg-slate-50 border-none rounded-xl px-4 h-10 text-xs"
+                                      value={h.value}
+                                      onChange={e => {
+                                        const next = [...newEndpoint.headers];
+                                        next[i] = { ...h, value: e.target.value };
+                                        setNewEndpoint({ ...newEndpoint, headers: next });
+                                      }}
+                                    />
+                                    {h.name?.toLowerCase() === 'content-type' && (
+                                        <datalist id="common-content-types-create">
+                                            <option value="application/json" />
+                                            <option value="application/xml" />
+                                            <option value="text/plain" />
+                                            <option value="multipart/form-data" />
+                                            <option value="application/x-www-form-urlencoded" />
+                                        </datalist>
+                                    )}
+                                  </div>
                                   <label className="flex items-center gap-2 cursor-pointer select-none bg-slate-50 border border-slate-100 rounded-xl px-3 h-10 transition-all hover:bg-white">
                                     <input
                                       type="checkbox"

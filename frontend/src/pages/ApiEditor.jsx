@@ -842,10 +842,11 @@ function ParameterList({ title, items, onChange }) {
                                             />
                                         </td>
                                         <td className="px-2 py-2.5 border-r border-slate-100 relative group/cell">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 w-full">
                                                 <input
                                                     value={item.name}
                                                     readOnly={isAuto}
+                                                    list={title.toLowerCase().includes('header') ? "common-headers" : undefined}
                                                     onChange={e => {
                                                         const next = [...items];
                                                         next[i] = { ...item, name: e.target.value };
@@ -854,12 +855,25 @@ function ParameterList({ title, items, onChange }) {
                                                     placeholder="Key"
                                                     className={`w-full bg-transparent text-sm font-medium outline-none placeholder:text-slate-300 ${isAuto ? 'text-slate-400 font-normal italic' : 'text-slate-800'}`}
                                                 />
+                                                {title.toLowerCase().includes('header') && (
+                                                    <datalist id="common-headers">
+                                                        <option value="Accept" />
+                                                        <option value="Authorization" />
+                                                        <option value="Content-Type" />
+                                                        <option value="Cache-Control" />
+                                                        <option value="User-Agent" />
+                                                        <option value="X-API-Key" />
+                                                        <option value="Origin" />
+                                                        <option value="Cookie" />
+                                                    </datalist>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="px-2 py-2.5">
                                             <input
                                                 value={item.value}
                                                 readOnly={isAuto}
+                                                list={item.name?.toLowerCase() === 'content-type' ? "common-content-types" : undefined}
                                                 onChange={e => {
                                                     const next = [...items];
                                                     next[i] = { ...item, value: e.target.value };
@@ -868,6 +882,15 @@ function ParameterList({ title, items, onChange }) {
                                                 placeholder="Value"
                                                 className={`w-full bg-transparent text-sm font-medium outline-none placeholder:text-slate-300 ${isAuto ? 'text-slate-400 font-normal' : 'text-slate-800'}`}
                                             />
+                                            {item.name?.toLowerCase() === 'content-type' && (
+                                                <datalist id="common-content-types">
+                                                    <option value="application/json" />
+                                                    <option value="application/xml" />
+                                                    <option value="text/plain" />
+                                                    <option value="multipart/form-data" />
+                                                    <option value="application/x-www-form-urlencoded" />
+                                                </datalist>
+                                            )}
                                         </td>
                                         <td className="px-4 py-2.5 text-right">
                                             {!isAuto && (

@@ -126,4 +126,67 @@ Requirements:
     }
 });
 
+router.post('/generate-endpoint', authenticate, async (req: AuthRequest, res: Response) => {
+    const { prompt: userPrompt } = req.body;
+
+    const geminiKey = process.env.GEMINI_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY;
+
+    if (!geminiKey && !groqKey) {
+        return res.status(400).json({ 
+            error: 'AI API Keys not configured.' 
+        });
+    }
+
+    const systemPrompt = `Act as an expert API Architect. Based on the user's prompt, design a complete REST API endpoint.
+Return ONLY valid JSON with no markdown formatting.
+JSON Structure:
+{
+    "path": "/api/v1/...",
+    "method": "GET|POST|PUT|DELETE|PATCH",
+    "summary": "Short title",
+    "description": "Longer explanation with markdown support",
+    "headers": [{"name": "Key", "value": "Value", "required": boolean}],
+    "query_params": [{"name": "Key", "type": "string|number|boolean", "required": boolean, "description": "text"}],
+    "path_params": [{"name": "Key", "type": "string|number", "description": "text"}],
+    "request_body": { ...json schema mock... or null },
+    "response_schema": { ...json schema mock... },
+    "auth_type": "None|Bearer|API Key|Basic"
+}
+
+User's Request: ${userPrompt}`;
+
+    let resultText = '';
+    let success = false;
+    let errors: string[] = [];
+
+    if (groqKey) {
+        try {
+            resultText = await generateWithGroq(groqKey, systemPrompt);
+            success = true;
+        } catch (e: any) {
+            errors.push(e.message);
+        }
+    }
+
+    if (!success && geminiKey) {
+        try {
+            resultText = await generateWithGemini(geminiKey, systemPrompt);
+            success = true;
+        } catch (e: any) {
+            errors.push(e.message);
+        }
+    }
+
+    if (!success) return res.status(500).json({ error: 'AI failed', details: errors });
+
+    try {
+        resultText = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const blueprint = JSON.parse(resultText);
+        res.json({ blueprint });
+    } catch (e) {
+        res.status(500).json({ error: 'AI returned invalid JSON blueprints', raw: resultText });
+    }
+});
+
 export default router;
