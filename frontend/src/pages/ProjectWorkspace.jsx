@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { projectsApi, apisApi, endpointsApi, exportApi, shareApi } from "../lib/api";
+import { projectsApi, apisApi, endpointsApi, exportApi, shareApi, aiApi } from "../lib/api";
 import { generatePdf } from "../lib/exportUtils";
 import ApiEditor from "./ApiEditor";
 import ApiPreview from "./ApiPreview";
@@ -153,16 +153,8 @@ export default function ProjectWorkspace() {
     setIsGenerating(true);
     try {
       const prompt = newEndpoint.summary || newEndpoint.path;
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4001/api'}/ai/generate-endpoint`, {
-        method: "POST",
-        headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ prompt })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "AI failed to generate endpoint blueprint");
+      const res = await aiApi.generateEndpoint({ prompt });
+      const data = res.data;
       
       if (data.blueprint) {
         setNewEndpoint({

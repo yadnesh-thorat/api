@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { endpointsApi, versionsApi } from "../lib/api";
+import { endpointsApi, versionsApi, aiApi } from "../lib/api";
 import { useSocket } from "../hooks/useSocket";
 import { formatRelativeTime, getMethodColor } from "../lib/utils";
 import Editor from "@monaco-editor/react";
@@ -179,39 +179,24 @@ export default function ApiEditor({ endpointId, projectId }) {
 
     const generateAiMock = async (type) => {
         setIsGenerating(true);
-        try {
-            // Use relative URL for production or dev
-            const apiUrl = "/api/ai/generate-mock";
-            
-            // Get names from existing params if any to help AI
-            const fieldNames = [
-                ...(currentEndpoint.query_params || []).map(p => p.name),
-                ...(currentEndpoint.path_params || []).map(p => p.name),
-                ...(currentEndpoint.headers || []).map(h => h.name)
-            ].filter(Boolean).join(", ");
+    try {
+      const fieldNames = [
+        ...(currentEndpoint.query_params || []).map(p => p.name),
+        ...(currentEndpoint.path_params || []).map(p => p.name),
+        ...(currentEndpoint.headers || []).map(h => h.name)
+      ].filter(Boolean).join(", ");
 
-            const res = await fetch(apiUrl, {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify({
-                    type,
-                    method: currentEndpoint.method,
-                    path: currentEndpoint.path,
-                    summary: currentEndpoint.summary,
-                    fieldNames,
-                    contentType: currentEndpoint.headers?.find(h => h.name?.toLowerCase() === 'content-type')?.value || "application/json",
-                    requestBody: type === "response" ? currentEndpoint.request_body : null
-                })
-            });
+      const res = await aiApi.generateMock({
+        type,
+        method: currentEndpoint.method,
+        path: currentEndpoint.path,
+        summary: currentEndpoint.summary,
+        fieldNames,
+        contentType: currentEndpoint.headers?.find(h => h.name?.toLowerCase() === 'content-type')?.value || "application/json",
+        requestBody: type === "response" ? currentEndpoint.request_body : null
+      });
 
-            const data = await res.json();
-            
-            if (!res.ok) {
-                throw new Error(data.error || "Failed to generate AI mock");
-            }
+      const data = res.data;
 
             if (data.mock) {
                 if (type === "request") {

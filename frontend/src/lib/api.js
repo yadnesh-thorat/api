@@ -46,12 +46,17 @@ const versionsApi = {
   restore: (id) => api.post(`/versions/${id}/restore`),
   compare: (id1, id2) => api.get(`/versions/compare/${id1}/${id2}`)
 };
+const aiApi = {
+  generateMock: (data) => api.post("/ai/generate-mock", data),
+  generateEndpoint: (data) => api.post("/ai/generate-endpoint", data)
+};
 const exportApi = {
   openapi: (projectId, format = "json") => api.get(`/export/${projectId}/openapi`, { params: { format } }),
   postman: (projectId) => api.get(`/export/${projectId}/postman`),
   importSpec: (projectId, spec) => api.post(`/export/${projectId}/import`, { spec })
 };
 export {
+  aiApi,
   apisApi,
 
   stdin_default as default,
